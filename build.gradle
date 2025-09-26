@@ -1,0 +1,15 @@
+// Root build.gradle (soma.app.foad)
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
