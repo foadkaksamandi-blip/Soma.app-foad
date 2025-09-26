@@ -1,0 +1,36 @@
+name: Android CI (soma.app.foad)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Make gradlew executable (if present)
+        if: ${{ hashFiles('gradlew') != '' }}
+        run: chmod +x gradlew
+
+      - name: Build Buyer/Seller APKs (skip if no Gradle project yet)
+        if: ${{ hashFiles('gradlew') != '' }}
+        run: ./gradlew assembleBuyerDebug assembleSellerDebug
+
+      - name: Upload APK artifacts (skip if not built)
+        if: ${{ hashFiles('app/build/outputs/apk/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: soma-apks
+          path: |
+            app/build/outputs/apk/buyer/debug/*.apk
+            app/build/outputs/apk/seller/debug/*.apk
