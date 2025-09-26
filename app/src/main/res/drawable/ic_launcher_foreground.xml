@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- دایره سفید -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,12a42,42 0 1,0 0,84a42,42 0 1,0 0,-84z"/>
+
+    <!-- حرف S ساده (سوما) -->
+    <path
+        android:fillColor="#222831"
+        android:pathData="M38,40c0,-8 8,-12 16,-12c10,0 18,5 18,12c0,8 -8,10 -16,12c-8,2 -16,4 -16,12c0,7 8,12 18,12c8,0 14,-3 16,-8l0,8c-4,4 -10,8 -18,8c-12,0 -22,-6 -22,-16c0,-10 10,-14 18,-16c8,-2 16,-4 16,-10c0,-6 -6,-10 -16,-10c-8,0 -14,3 -16,8z"/>
+</vector>
