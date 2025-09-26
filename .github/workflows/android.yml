@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,16 +19,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Make gradlew executable (if present)
-        if: ${{ hashFiles('gradlew') != '' }}
-        run: chmod +x gradlew
+      - name: Set up Gradle (no wrapper)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.7
 
-      - name: Build Buyer/Seller APKs (skip if no Gradle project yet)
-        if: ${{ hashFiles('gradlew') != '' }}
-        run: ./gradlew assembleBuyerDebug assembleSellerDebug
+      - name: Build Buyer/Seller APKs
+        run: |
+          gradle --version
+          gradle assembleBuyerDebug assembleSellerDebug
 
-      - name: Upload APK artifacts (skip if not built)
-        if: ${{ hashFiles('app/build/outputs/apk/**') != '' }}
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: soma-apks
