@@ -1,69 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:orientation="vertical" android:padding="16dp"
-        android:layout_width="match_parent" android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
+        <!-- نقش و موجودی -->
         <TextView
             android:id="@+id/tvRole"
-            android:text="نقش:" android:textSize="18sp"
-            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="نقش: -"
+            android:textSize="18sp"
+            android:paddingBottom="8dp" />
 
         <TextView
             android:id="@+id/tvBalance"
-            android:text="موجودی: -" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_marginTop="6dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="موجودی: 0"
+            android:textSize="18sp"
+            android:paddingBottom="12dp" />
 
-        <!-- فروشنده -->
+        <!-- دکمه مخصوص فروشنده -->
         <Button
             android:id="@+id/btnStartServer"
-            android:text="شروع دریافت (فروشنده)"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="شروع سرور بلوتوث (فروشنده)"
+            android:padding="12dp" />
 
-        <!-- خریدار -->
+        <!-- بخش خریدار: اسکن و انتخاب -->
         <Button
             android:id="@+id/btnScan"
-            android:text="جست‌وجوی دستگاه‌ها (خریدار)"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="اسکن دستگاه فروشنده (خریدار)"
             android:layout_marginTop="12dp" />
 
         <ListView
             android:id="@+id/lvDevices"
-            android:layout_width="match_parent" android:layout_height="150dp"
-            android:dividerHeight="1dp" android:layout_marginTop="8dp" />
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginTop="8dp"
+            android:dividerHeight="1dp" />
 
         <TextView
             android:id="@+id/tvSelected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="دستگاه انتخاب‌شده: -"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
+            android:layout_marginTop="8dp" />
 
+        <!-- مبلغ و پرداخت -->
         <EditText
             android:id="@+id/etAmount"
-            android:hint="مبلغ را وارد کنید (ریال)"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="مبلغ (ریال)"
             android:inputType="number"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="12dp" />
 
         <Button
             android:id="@+id/btnPay"
-            android:text="پرداخت (خریدار)"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="پرداخت"
             android:layout_marginTop="8dp" />
 
+        <!-- نتیجه و QR رسید -->
         <TextView
             android:id="@+id/tvResult"
-            android:text="نتیجه: -"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="نتیجه تراکنش نمایش داده می‌شود"
             android:layout_marginTop="12dp" />
 
         <ImageView
             android:id="@+id/imgQr"
-            android:layout_width="220dp" android:layout_height="220dp"
-            android:layout_marginTop="12dp" />
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="12dp"
+            android:contentDescription="QR رسید تراکنش"
+            android:scaleType="centerInside" />
 
     </LinearLayout>
 </ScrollView>
