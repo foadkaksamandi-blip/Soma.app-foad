@@ -9,7 +9,8 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import ir.soma.app.foad.R
+import ir.soma.app.foad.BuildConfig           // ← اضافه شد
+import ir.soma.app.foad.R                    // ← اضافه شد
 import ir.soma.app.foad.SomaApp
 import ir.soma.app.foad.auth.Auth
 import ir.soma.app.foad.bt.BluetoothService
@@ -92,7 +93,9 @@ class MainActivity : AppCompatActivity() {
                         imgQr.setImageBitmap(Qr.make("TX:$txId", 512))
                         scope.launch(Dispatchers.IO) {
                             val w = repo.getOrInitWallet("seller-001")
-                            withContext(Dispatchers.Main) { tvBalance.text = "موجودی: ${formatRials(w.balance)}" }
+                            withContext(Dispatchers.Main) {
+                                tvBalance.text = "موجودی: ${formatRials(w.balance)}"
+                            }
                         }
                     }
                 }
@@ -170,7 +173,9 @@ class MainActivity : AppCompatActivity() {
                     imgQr.setImageBitmap(Qr.make("TX:$txId", 512))
                     scope.launch(Dispatchers.IO) {
                         val w = repo.getOrInitWallet("buyer-001")
-                        withContext(Dispatchers.Main) { tvBalance.text = "موجودی: ${formatRials(w.balance)}" }
+                        withContext(Dispatchers.Main) {
+                            tvBalance.text = "موجودی: ${formatRials(w.balance)}"
+                        }
                     }
                 }
             }
