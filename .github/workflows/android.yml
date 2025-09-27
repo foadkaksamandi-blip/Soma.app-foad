@@ -1,9 +1,13 @@
-name: Android CI (full setup, no wrapper)
+name: Android CI (module :app, no wrapper)
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -13,68 +17,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # نصب Android SDK و آماده‌سازی sdkmanager
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install required Android packages
+      # نصب پکیج‌های لازم SDK (پلتفرم و بیلد تولز)
+      - name: Install Android SDK packages
         run: |
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0" \
-            "cmake;3.22.1" || true
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses
 
-      # نصب Gradle 8.7 بدون نیاز به wrapper
-      - name: Install Gradle 8.7 (SDKMAN)
-        run: |
-          curl -s "https://get.sdkman.io" | bash
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install gradle 8.7
-          gradle -v
+      # اجرای گرادل بدون نیاز به gradlew (خودِ اکشن Gradle 8.7 را دانلود و کش می‌کند)
+      - name: Assemble Debug APK (module :app)
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.7
+          arguments: :app:assembleDebug --stacktrace --no-daemon
 
-      # چاپ پروژه‌ها و تسک‌ها برای عیب‌یابی
-      - name: Show Gradle projects & key tasks
-        run: |
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          gradle --no-daemon --console=plain projects
-          gradle --no-daemon --console=plain tasks --all | (grep -E "assemble(Debug|BuyerDebug|SellerDebug)" || true)
-
-      # بیلد؛ اگر فقط app داری همین کار می‌کند.
-      # اگر طعم‌های Buyer/Seller داری، می‌توانی آن‌ها را هم اضافه کنی.
-      - name: Build Debug APK(s)
-        run: |
-          set -e
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          # لاگ کامل
-          gradle --no-daemon --console=plain --stacktrace \
-            :app:assembleDebug | tee gradle-build.log
-
-      # آپلود APKها (گلوب عمومی تا هر ماژولی را پوشش دهد)
-      - name: Upload APK artifacts
-        if: always()
+      # آپلود خروجی APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: apks-debug
-          path: |
-            **/build/outputs/apk/**/debug/*.apk
-          if-no-files-found: warn
-
-      # آپلود گزارش‌ها و لاگ‌ها برای تشخیص سریع اگر بیلد fail شد
-      - name: Upload build reports & logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs-and-reports
-          path: |
-            **/build/reports/**
-            **/build/outputs/logs/**
-            gradle-build.log
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
