@@ -1,13 +1,9 @@
-name: Android CI (module :app, no wrapper)
+name: Android CI (no wrapper, setup-gradle)
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
-concurrency:
-  group: android-ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
@@ -26,20 +22,19 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # نصب پکیج‌های لازم SDK (پلتفرم و بیلد تولز)
       - name: Install Android SDK packages
         run: |
           sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses
 
-      # اجرای گرادل بدون نیاز به gradlew (خودِ اکشن Gradle 8.7 را دانلود و کش می‌کند)
-      - name: Assemble Debug APK (module :app)
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: 8.7
-          arguments: :app:assembleDebug --stacktrace --no-daemon
+      # اکشن جدید برای Gradle (جایگزین gradle-build-action)
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      # آپلود خروجی APK
+      # اجرای بیلد روی ماژول app
+      - name: Assemble Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
