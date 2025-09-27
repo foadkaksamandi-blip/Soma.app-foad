@@ -1,42 +1,50 @@
 name: Android CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: temurin
-        java-version: 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      # به جای ./gradlew از اکشن رسمی Gradle استفاده می‌کنیم
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'   # همون نسخه لاگ‌ها
 
-    - name: Build Buyer APK
-      run: ./gradlew assembleBuyerDebug
+      # بیلد مستقیم با Gradle (بدون wrapper)
+      - name: Build Buyer/Seller APKs
+        run: |
+          gradle --version
+          gradle :app:assembleBuyerDebug :app:assembleSellerDebug --stacktrace
 
-    - name: Build Seller APK
-      run: ./gradlew assembleSellerDebug
+      # آپلود APKها (اگر ساخت شدند)
+      - name: Upload Buyer APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buyer-apk
+          path: app/build/outputs/apk/buyer/debug/*.apk
+          if-no-files-found: warn
 
-    - name: Upload Buyer APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: buyer-apk
-        path: app/build/outputs/apk/buyer/debug/*.apk
-
-    - name: Upload Seller APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: seller-apk
-        path: app/build/outputs/apk/seller/debug/*.apk
+      - name: Upload Seller APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seller-apk
+          path: app/build/outputs/apk/seller/debug/*.apk
+          if-no-files-found: warn
