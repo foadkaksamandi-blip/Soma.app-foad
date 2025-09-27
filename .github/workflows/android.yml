@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI (no wrapper)
 
 on:
   push:
@@ -19,18 +19,25 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: false
-
-      - name: Build Debug APK
+      - name: Install SDKMAN! and Gradle 8.7
         run: |
-          gradle :app:assembleDebug --stacktrace
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install gradle 8.7
+          gradle -v
 
-      - name: Upload APK
+      # بیلد هر دو وِریِنت — اگر یکی نداری، همون یکیش رو بزن
+      - name: Build Buyer/Seller debug APKs
+        run: |
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          gradle --no-daemon --stacktrace \
+            assembleBuyerDebug assembleSellerDebug
+
+      - name: Upload debug APKs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: debug-apks
+          path: |
+            app/build/outputs/apk/**/debug/*.apk
           if-no-files-found: warn
