@@ -1,17 +1,16 @@
-name: Android CI (soma.app.foad)
+name: Android CI
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -19,45 +18,24 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Gradle (no wrapper, no cache)
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.7
-          cache-disabled: true
 
-      # مهم: حتی اگر بیلد خطا بده، ادامه بده تا لاگ کامل ذخیره شود
-      - name: Build Buyer/Seller APKs (verbose)
-        run: |
-          set -o pipefail
-          gradle assembleBuyerDebug assembleSellerDebug \
-            --console=plain --stacktrace --info --no-daemon \
-            | tee gradle-build.log || true
+      - name: Build debug APK
+        run: ./gradlew clean :app:assembleDebug
 
-      # این مرحله، عصاره خطا را با شماره‌خط/نام‌فایل چاپ می‌کند
-      - name: Show key errors (Kotlin/AAPT/FAILURE)
+      # فقط برای اینکه مطمئن شویم APK کجا ساخته شده
+      - name: Show outputs tree
+        if: always()
         run: |
-          echo "================ FAILURES ================="
-          grep -n "FAILURE: Build failed with an exception" gradle-build.log || true
-          echo "================ Kotlin 'e:' lines ======="
-          grep -n "^e: " gradle-build.log | tail -n 50 || true
-          echo "============= Android resource linking ===="
-          grep -n "Android resource linking failed" gradle-build.log || true
-          echo "================ ERROR TAIL ==============="
-          tail -n 200 gradle-build.log
-          echo "=========================================="
+          echo "=== outputs ==="
+          ls -alh app/build/outputs || true
+          find app/build/outputs -maxdepth 4 -type f -name "*.apk" -print || true
 
       - name: Upload APK artifacts
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: soma-apks
+          name: app-apks
           path: |
-            app/build/outputs/apk/buyer/debug/*.apk
-            app/build/outputs/apk/seller/debug/*.apk
-
-      - name: Upload Gradle logs (always)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-logs
-          path: gradle-build.log
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/*/debug/*.apk
