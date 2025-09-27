@@ -25,28 +25,25 @@ jobs:
           gradle-version: 8.7
           cache-disabled: true
 
-      # بیلد با خروجی ساده و کامل تا خطا گم نشود
+      # مهم: حتی اگر بیلد خطا بده، ادامه بده تا لاگ کامل ذخیره شود
       - name: Build Buyer/Seller APKs (verbose)
         run: |
           set -o pipefail
           gradle assembleBuyerDebug assembleSellerDebug \
-            --console=plain --info --stacktrace --warning-mode all --no-daemon \
-            | tee gradle-build.log
+            --console=plain --stacktrace --info --no-daemon \
+            | tee gradle-build.log || true
 
-      # استخراج خطوط کلیدی خطا از لاگ
+      # این مرحله، عصاره خطا را با شماره‌خط/نام‌فایل چاپ می‌کند
       - name: Show key errors (Kotlin/AAPT/FAILURE)
-        if: failure()
         run: |
           echo "================ FAILURES ================="
-          grep -n "FAILURE: Build failed with an exception" -n gradle-build.log || true
+          grep -n "FAILURE: Build failed with an exception" gradle-build.log || true
           echo "================ Kotlin 'e:' lines ======="
           grep -n "^e: " gradle-build.log | tail -n 50 || true
           echo "============= Android resource linking ===="
-          grep -n "Android resource linking failed" gradle-build.log -n || true
-          echo "================ Duplicate class =========="
-          grep -n "Duplicate class " gradle-build.log || true
+          grep -n "Android resource linking failed" gradle-build.log || true
           echo "================ ERROR TAIL ==============="
-          tail -n 400 gradle-build.log
+          tail -n 200 gradle-build.log
           echo "=========================================="
 
       - name: Upload APK artifacts
