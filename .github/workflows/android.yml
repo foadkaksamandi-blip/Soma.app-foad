@@ -25,27 +25,29 @@ jobs:
           gradle-version: 8.7
           cache-disabled: true
 
+      # بیلد با خروجی ساده و کامل تا خطا گم نشود
       - name: Build Buyer/Seller APKs (verbose)
         run: |
           set -o pipefail
-          # لاگ کامل برای اینکه متن خطا حتماً ثبت شود
-          gradle assembleBuyerDebug assembleSellerDebug --info --stacktrace --no-daemon --warning-mode all | tee gradle-build.log
+          gradle assembleBuyerDebug assembleSellerDebug \
+            --console=plain --info --stacktrace --warning-mode all --no-daemon \
+            | tee gradle-build.log
 
-      # استخراج دقیق Duplicate class ها، اگر وجود داشته باشد
-      - name: Show DuplicateClasses details
+      # استخراج خطوط کلیدی خطا از لاگ
+      - name: Show key errors (Kotlin/AAPT/FAILURE)
         if: failure()
         run: |
-          echo "================ DUPLICATE CLASSES ================"
-          grep -n "Duplicate class " gradle-build.log || echo "No 'Duplicate class' lines found."
-          echo "==================================================="
-
-      # اگر مورد بالا چیزی چاپ نکرد، انتهای لاگ را کامل نشان بده
-      - name: Show concise Kotlin/AAPT errors
-        if: failure()
-        run: |
-          echo "================ ERROR TAIL ======================="
+          echo "================ FAILURES ================="
+          grep -n "FAILURE: Build failed with an exception" -n gradle-build.log || true
+          echo "================ Kotlin 'e:' lines ======="
+          grep -n "^e: " gradle-build.log | tail -n 50 || true
+          echo "============= Android resource linking ===="
+          grep -n "Android resource linking failed" gradle-build.log -n || true
+          echo "================ Duplicate class =========="
+          grep -n "Duplicate class " gradle-build.log || true
+          echo "================ ERROR TAIL ==============="
           tail -n 400 gradle-build.log
-          echo "==================================================="
+          echo "=========================================="
 
       - name: Upload APK artifacts
         if: success()
