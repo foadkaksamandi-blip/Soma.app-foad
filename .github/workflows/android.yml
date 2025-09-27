@@ -19,22 +19,36 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # نصب Gradle بدون استفاده از کش و بدون gradlew (wrapper)
       - name: Set up Gradle (no wrapper, no cache)
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.7
           cache-disabled: true
 
-      - name: Build Buyer/Seller APKs
+      - name: Show Gradle & projects
         run: |
           gradle --version
-          gradle assembleBuyerDebug assembleSellerDebug
+          gradle projects --info --stacktrace | tee projects.log
+
+      - name: Build Buyer/Seller APKs (verbose)
+        run: |
+          set -o pipefail
+          gradle assembleBuyerDebug assembleSellerDebug --info --stacktrace | tee gradle-build.log
 
       - name: Upload APK artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: soma-apks
           path: |
             app/build/outputs/apk/buyer/debug/*.apk
             app/build/outputs/apk/seller/debug/*.apk
+
+      - name: Upload Gradle logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs
+          path: |
+            gradle-build.log
+            projects.log
