@@ -1,4 +1,4 @@
-name: Android CI (no wrapper)
+name: Android CI (full setup, no wrapper)
 
 on:
   push:
@@ -19,25 +19,62 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install SDKMAN! and Gradle 8.7
+      # نصب Android SDK و آماده‌سازی sdkmanager
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required Android packages
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "cmake;3.22.1" || true
+          yes | sdkmanager --licenses
+
+      # نصب Gradle 8.7 بدون نیاز به wrapper
+      - name: Install Gradle 8.7 (SDKMAN)
         run: |
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install gradle 8.7
           gradle -v
 
-      # بیلد هر دو وِریِنت — اگر یکی نداری، همون یکیش رو بزن
-      - name: Build Buyer/Seller debug APKs
+      # چاپ پروژه‌ها و تسک‌ها برای عیب‌یابی
+      - name: Show Gradle projects & key tasks
         run: |
           source "$HOME/.sdkman/bin/sdkman-init.sh"
-          gradle --no-daemon --stacktrace \
-            assembleBuyerDebug assembleSellerDebug
+          gradle --no-daemon --console=plain projects
+          gradle --no-daemon --console=plain tasks --all | (grep -E "assemble(Debug|BuyerDebug|SellerDebug)" || true)
 
-      - name: Upload debug APKs
+      # بیلد؛ اگر فقط app داری همین کار می‌کند.
+      # اگر طعم‌های Buyer/Seller داری، می‌توانی آن‌ها را هم اضافه کنی.
+      - name: Build Debug APK(s)
+        run: |
+          set -e
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          # لاگ کامل
+          gradle --no-daemon --console=plain --stacktrace \
+            :app:assembleDebug | tee gradle-build.log
+
+      # آپلود APKها (گلوب عمومی تا هر ماژولی را پوشش دهد)
+      - name: Upload APK artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apks
+          name: apks-debug
           path: |
-            app/build/outputs/apk/**/debug/*.apk
+            **/build/outputs/apk/**/debug/*.apk
+          if-no-files-found: warn
+
+      # آپلود گزارش‌ها و لاگ‌ها برای تشخیص سریع اگر بیلد fail شد
+      - name: Upload build reports & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-and-reports
+          path: |
+            **/build/reports/**
+            **/build/outputs/logs/**
+            gradle-build.log
           if-no-files-found: warn
