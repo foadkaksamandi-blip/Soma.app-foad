@@ -2,41 +2,41 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 17
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
-      - name: Build Buyer APK
-        run: ./gradlew assembleBuyerDebug
+    - name: Build Buyer APK
+      run: ./gradlew assembleBuyerDebug
 
-      - name: Build Seller APK
-        run: ./gradlew assembleSellerDebug
+    - name: Build Seller APK
+      run: ./gradlew assembleSellerDebug
 
-      - name: Upload Buyer APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: buyer-apk
-          path: app/build/outputs/apk/buyer/debug/*.apk
+    - name: Upload Buyer APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: buyer-apk
+        path: app/build/outputs/apk/buyer/debug/*.apk
 
-      - name: Upload Seller APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: seller-apk
-          path: app/build/outputs/apk/seller/debug/*.apk
+    - name: Upload Seller APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: seller-apk
+        path: app/build/outputs/apk/seller/debug/*.apk
