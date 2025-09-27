@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,15 +28,24 @@ jobs:
       - name: Build Buyer/Seller APKs (verbose)
         run: |
           set -o pipefail
-          gradle assembleBuyerDebug assembleSellerDebug --info --stacktrace --no-daemon | tee gradle-build.log
+          # لاگ کامل برای اینکه متن خطا حتماً ثبت شود
+          gradle assembleBuyerDebug assembleSellerDebug --info --stacktrace --no-daemon --warning-mode all | tee gradle-build.log
 
-      # اگر قبلی چیزی پیدا نکرد، انتهای لاگ رو مستقیم چاپ کن تا خطای اصلی دیده بشه
+      # استخراج دقیق Duplicate class ها، اگر وجود داشته باشد
+      - name: Show DuplicateClasses details
+        if: failure()
+        run: |
+          echo "================ DUPLICATE CLASSES ================"
+          grep -n "Duplicate class " gradle-build.log || echo "No 'Duplicate class' lines found."
+          echo "==================================================="
+
+      # اگر مورد بالا چیزی چاپ نکرد، انتهای لاگ را کامل نشان بده
       - name: Show concise Kotlin/AAPT errors
         if: failure()
         run: |
-          echo "================ ERROR SUMMARY ================"
-          tail -n 300 gradle-build.log
-          echo "==============================================="
+          echo "================ ERROR TAIL ======================="
+          tail -n 400 gradle-build.log
+          echo "==================================================="
 
       - name: Upload APK artifacts
         if: success()
