@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,16 +27,14 @@ jobs:
       - name: Build Buyer/Seller APKs (verbose)
         run: |
           set -o pipefail
-          gradle --version
-          # بیلد با لاگ کامل
           gradle assembleBuyerDebug assembleSellerDebug --info --stacktrace --no-daemon | tee gradle-build.log
 
-      # این مرحله، خلاصه‌ی خطاها را مستقیماً در کنسول نشان می‌دهد
+      # اگر قبلی چیزی پیدا نکرد، انتهای لاگ رو مستقیم چاپ کن تا خطای اصلی دیده بشه
       - name: Show concise Kotlin/AAPT errors
         if: failure()
         run: |
           echo "================ ERROR SUMMARY ================"
-          grep -E "^(e: |.*Android resource linking failed|> Task :app:|> Task :)" -n gradle-build.log | tail -n 200 || true
+          tail -n 300 gradle-build.log
           echo "==============================================="
 
       - name: Upload APK artifacts
