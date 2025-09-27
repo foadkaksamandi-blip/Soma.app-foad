@@ -1,9 +1,11 @@
 name: Android CI
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,33 +20,25 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      # به جای ./gradlew از اکشن رسمی Gradle استفاده می‌کنیم
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.7'   # همون نسخه لاگ‌ها
+      # retry: trigger build again due to GH cache outage
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
 
-      # بیلد مستقیم با Gradle (بدون wrapper)
-      - name: Build Buyer/Seller APKs
-        run: |
-          gradle --version
-          gradle :app:assembleBuyerDebug :app:assembleSellerDebug --stacktrace
+      - name: Build Buyer APK
+        run: ./gradlew :app:assembleBuyerDebug
 
-      # آپلود APKها (اگر ساخت شدند)
+      - name: Build Seller APK
+        run: ./gradlew :app:assembleSellerDebug
+
       - name: Upload Buyer APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: buyer-apk
+          name: Buyer-APK
           path: app/build/outputs/apk/buyer/debug/*.apk
-          if-no-files-found: warn
 
       - name: Upload Seller APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: seller-apk
+          name: Seller-APK
           path: app/build/outputs/apk/seller/debug/*.apk
-          if-no-files-found: warn
