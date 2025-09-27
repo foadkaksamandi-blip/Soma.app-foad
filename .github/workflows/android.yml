@@ -19,22 +19,18 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # از خود گریدل استفاده می‌کنیم (بدون gradlew)
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           cache-read-only: false
 
-      - name: Build Buyer/Seller APKs
+      - name: Build Debug APK
         run: |
-          gradle --version
-          gradle :app:assembleBuyerDebug :app:assembleSellerDebug --stacktrace
+          gradle :app:assembleDebug --stacktrace
 
-      - name: Upload APK artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug
-          path: |
-            app/build/outputs/apk/buyer/debug/*.apk
-            app/build/outputs/apk/seller/debug/*.apk
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
