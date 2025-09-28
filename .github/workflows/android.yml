@@ -27,11 +27,13 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses
 
-      # اکشن جدید برای Gradle (جایگزین gradle-build-action)
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # اجرای بیلد روی ماژول app
+      # 👇 قدم جدید برای اجازه اجرا
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Assemble Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
 
