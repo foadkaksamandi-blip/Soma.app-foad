@@ -1,4 +1,4 @@
-name: Android CI (no wrapper, setup-gradle)
+name: Android CI (no wrapper)
 
 on:
   push:
@@ -27,15 +27,17 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      # نصب Gradle با SDKMAN و اضافه کردن به PATH
+      - name: Install Gradle 8.7
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install gradle 8.7
+          echo "$HOME/.sdkman/candidates/gradle/current/bin" >> $GITHUB_PATH
 
-      # 👇 قدم جدید برای اجازه اجرا
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
+      # اجرای بیلد با خود gradle (نه ./gradlew)
       - name: Assemble Debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
+        run: gradle :app:assembleDebug --stacktrace --no-daemon
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
